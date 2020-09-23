@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
+
+    <title>注册</title>
+</head>
+<style>
+    .account {
+        width: 500px;
+        margin: 0 auto;
+    }
+</style>
+<body>
+<div class="account">
+    <h1 style="text-align: center">注册</h1>
+<form>
+{% for field in form %}
+    {% if field.name == 'verify_code' %}
+    <div class="form-group">
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+    <div class="clearfix">
+        <div class="col-md-6" style="padding-left: 0">{{ field }}</div>
+        <div class="col-md-6"><input type="button" class="btn btn-default" id="btn1" value="点击获取验证码"></div>
+    </div>
+  </div>
+    {% else %}
+      <div class="form-group {{ field.name }}">
+    {#    <label for="exampleInputEmail1">Email address</label>#}
+    {#    <input type="email" class="form-control" id="exampleInputEmail1" placeholder="Email">#}
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{field}}
+    </div>
+    {% endif %}
+
+{% endfor %}
+<button type="submit" class="btn btn-primary">提 交</button>
+</form>
+</div>
+
+<script src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js"></script>
+<script type="text/javascript">
+    var btn = document.getElementById("btn1");
+    var inp = document.getElementsByClassName("mobile");
+    var mobile = $("#mobile").val();
+    alert(mobile)
+
+    alert("woaiwanqian")
+    {#alert(btn.value)#}
+    {#alert(inp.value);#}
+    btn.onclick = function(){
+
+    alert("方法开始执行")
+    $.ajax({
+            type: "GET",
+            dataType: "json",
+            url: "/app01/send_sms/",
+            data: {
+                mobile:mobile,
+                tpl: 'register'
+            },
+            success: function (data) {
+                {#if (!dataResult.success){#}
+                    {#alert(dataResult.message);#}
+                    {#return false;#}
+
+
+                alert(data);
+                {#window.location.href = "/toMainPage";#}
+            },
+
+        });
+    }
+</script>
+
+</body>
+</html>

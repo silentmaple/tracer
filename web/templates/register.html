@@ -1,0 +1,134 @@
+{% extends 'layout/base.html' %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}用户注册{% endblock %}</title>
+    {% block css %}
+        <style>
+            .account {
+                width: 500px;
+                margin: 0 auto;
+            }
+        </style>
+    {% endblock %}
+</head>
+<body>
+{% block content %}
+    <div class="account">
+        <h1 style="text-align: center">用户注册</h1>
+        <form id="regForm" method="POST">
+            {% csrf_token %}
+            {% for field in form %}
+                {% if field.name == 'verify_code' %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        <div class="clearfix">
+                            <div class="col-md-6" style="padding-left: 0">{{ field }}</div>
+                            <div class="col-md-6"><input type="button" class="btn btn-default" id="smsBtn"
+                                                         value="点击获取验证码"></div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="form-group {{ field.name }}">
+                        {#    <label for="exampleInputEmail1">Email address</label>#}
+                        {#    <input type="email" class="form-control" id="exampleInputEmail1" placeholder="Email">#}
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        <label class="error-msg"></label>
+                    </div>
+                {% endif %}
+
+            {% endfor %}
+            <button type="submit" class="btn btn-primary" id="submitBtn">提 交</button>
+        </form>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script>
+        // 页面框架加载完成之后自动执行函数
+        $(function () {
+            bindClickBtnSms();
+            bindClickSubmit()
+        });
+
+        // 注册提交
+        function bindClickSubmit() {
+            $("#submitBtn").click(function () {
+                $(".error-msg").empty();
+                $.ajax({
+                    url: "{% url 'register' %}",
+                    type: "POST",
+                    dataType: "json",
+                    // async: false,
+                    // 收集表单中的数据（找到每一个字段）$('#regForm').serialize()
+                    data: $("#regForm").serialize(),  // 所有字段数据 + csrf token
+                    success: function (res) {
+                        if (res.status) {
+                            alert("我爱万茜");
+                            location.href = res.data;
+                        } else {
+                            alert(res.error);
+                            $.each(res.error, function (key, value) {
+                                $("#id_" + key).next().text(value[0]);
+                            })
+                        }
+                    }
+                })
+            })
+        }
+
+        // 发送短信验证码
+        function bindClickBtnSms() {
+            $('#smsBtn').click(function () {
+                $(".error-msg").empty();
+                var mobile = $('#id_mobile').val();
+                // alert(mobile);
+                $.ajax({
+                    url: "{% url 'send_sms' %}", // 等价于url:"/send_sms/"
+                    type: "GET",
+                    data: {
+                        mobile: mobile,
+                        tpl: "register"
+                    },
+                    dataType: "json",
+                    success: function (res) {
+                        if (res.status) {
+                            sendSmsRemind()  // 如果成功，设置定时器，倒数60s
+                        } else {
+                            //错误信息
+                            // console.log(res); // {status:False, error:{ mobile_phone: ["错误信息"，],code: ["错误信息"，] }  }
+                            $.each(res.error, function (key, value) {
+                                $("#id_" + key).next().text(value[0]);//给input下的label标签加上错误信息
+                            })
+                        }
+                    },
+                })
+            })
+        }
+
+        /*
+            倒计时
+             */
+        function sendSmsRemind() {
+            var $smsBtn = $('#smsBtn');
+            $smsBtn.prop('disabled', true); // 禁用
+            var time = 60;
+            var remind = setInterval(function () {
+                $smsBtn.val(time + '秒重新发送');
+                time = time - 1;
+                if (time < 1) {
+                    clearInterval(remind);
+                    $smsBtn.val('点击获取验证码').prop('disabled', false);
+                }
+            }, 1000)
+
+        }
+
+
+    </script>
+{% endblock %}
+</body>
+</html>
