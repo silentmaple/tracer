@@ -1,4 +1,6 @@
 from io import BytesIO
+import uuid
+import datetime
 
 from django.shortcuts import render, HttpResponse, redirect
 from django.http import JsonResponse
@@ -21,7 +23,20 @@ def register(request):
     if form.is_valid():
         # 校验完成后，利用form中save方法保存数据
         instance = form.save()
-        print("保存了吗？")
+
+        # 用户注册,创建交易记录
+        # 方式一
+        policy_object = models.PricePolicy.objects.filter(category=1, title="个人免费版").first()
+        models.Transaction.objects.create(
+            status=2,
+            order=str(uuid.uuid4()),
+            user=instance,
+            price_policy=policy_object,
+            count=0,
+            price=0,
+            start_datetime=datetime.datetime.now()
+        )
+
         # return JsonResponse({'status': True, 'data': '/login/'})
         return JsonResponse({'status': True, 'data': '/login/'})
     return JsonResponse({'status': False, 'error': form.errors})
