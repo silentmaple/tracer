@@ -10,3 +10,9 @@ def md5(string):
     hash_object.update(string.encode('utf-8'))
     return hash_object.hexdigest()
 
+def uid(string):
+    # 构建图片在腾讯cos存储时的名称
+    data = "{}-{}".format(str(uuid.uuid4()), string)
+    return md5(data)
+
+

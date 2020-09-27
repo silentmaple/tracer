@@ -90,8 +90,9 @@ class Project(models.Model):
     creator = models.ForeignKey(verbose_name='创建者', to='UserInfo')
     create_datetime = models.DateTimeField(verbose_name='创建时间', auto_now_add=True)
 
-    # bucket = models.CharField(verbose_name='cos桶', max_length=128)
-    # region = models.CharField(verbose_name='cos区域', max_length=32)
+    # 创建文件或图片存储的桶和cos区域
+    bucket = models.CharField(verbose_name='cos桶', max_length=128)
+    region = models.CharField(verbose_name='cos区域', max_length=32)
 
     # 查询：可以省事；
     # 增加、删除、修改：无法完成
@@ -105,6 +106,43 @@ class ProjectUser(models.Model):
     star = models.BooleanField(verbose_name='星标', default=False)
 
     create_datetime = models.DateTimeField(verbose_name='加入时间', auto_now_add=True)
+
+class Wiki(models.Model):
+    project = models.ForeignKey(verbose_name='项目', to='Project')
+    title = models.CharField(verbose_name='标题', max_length=32)
+    content = models.TextField(verbose_name='内容')
+
+    depth = models.IntegerField(verbose_name='深度', default=1)
+
+    # 子关联to="Wiki"或者to="self"都可以关联自己
+    parent = models.ForeignKey(verbose_name='父文章', to="Wiki", null=True, blank=True, related_name='children')
+
+    def __str__(self):
+        return self.title
+
+
+class FileRepository(models.Model):
+    """ 文件库 """
+    project = models.ForeignKey(verbose_name='项目', to='Project')
+    file_type_choices = (
+        (1, '文件'),
+        (2, '文件夹')
+    )
+    file_type = models.SmallIntegerField(verbose_name='类型', choices=file_type_choices)
+    name = models.CharField(verbose_name='文件夹名称', max_length=32, help_text="文件/文件夹名")
+    key = models.CharField(verbose_name='文件储存在COS中的KEY', max_length=128, null=True, blank=True)
+
+    # int类型最大表示的数据
+    file_size = models.BigIntegerField(verbose_name='文件大小', null=True, blank=True, help_text='字节')
+
+    # 文件url，可加可不加，不加的话，根据规则自己拼接出来也可以
+    file_path = models.CharField(verbose_name='文件路径', max_length=255, null=True,
+                                 blank=True)  # https://桶.cos.ap-chengdu/....
+
+    parent = models.ForeignKey(verbose_name='父级目录', to='self', related_name='child', null=True, blank=True)
+
+    update_user = models.ForeignKey(verbose_name='最近更新者', to='UserInfo')
+    update_datetime = models.DateTimeField(verbose_name='更新时间', auto_now=True)
 
 
 

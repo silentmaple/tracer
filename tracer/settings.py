@@ -140,6 +140,10 @@ TENCENT_SMS_TEMPLATE = {
     'login': 548762
 }
 
+# 腾讯对象存储cos的id和秘钥，真实数据在local_settings.py
+TENCENT_COS_ID = "COS的secret_id"
+TENCENT_COS_KEY = "COS的secret_key"
+
 # ########### 登录白名单：无需登录就可以访问的页面 ###########
 WHITE_REGEX_URL_LIST = [
     "/register/",
